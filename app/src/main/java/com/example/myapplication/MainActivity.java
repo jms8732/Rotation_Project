@@ -12,8 +12,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -34,13 +36,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         plug = (Switch) findViewById(R.id.plug);
         plug.setOnClickListener(this);
-        prefs = getPreferences(Context.MODE_PRIVATE);
+        prefs = getSharedPreferences("pref",MODE_PRIVATE);
 
         Log.d("jms8732", "Toggle: " + checked);
 
         checked = prefs.getBoolean("status", false);
 
         plug.setChecked(checked);
+
+        //화면 전환을 permission
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if(!Settings.System.canWrite(this)) {
+                Intent intent = new Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS);
+                intent.setData(Uri.parse("package:" + this.getPackageName()));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        }
+
     }
 
     @Override
@@ -53,7 +66,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             if (!checked) { //스위치를 키는 경우
                 checked = true;
-
                 if (Build.VERSION.SDK_INT >= 26)
                     startForegroundService(intent);
                 else
