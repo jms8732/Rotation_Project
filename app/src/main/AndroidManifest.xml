@@ -4,7 +4,7 @@
     package="com.example.myapplication">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
     <application
         android:allowBackup="true"
@@ -22,9 +22,9 @@
         </activity>
         <service android:name=".RotationService"
             android:enabled="true"
-            android:exported="true"/>
+            android:exported="false"/>
 
-        <!-- 엑티비티를 바로 삭제하기 위해서 noHistroy, excludeFromRecents 사용용-->
+        <!-- 엑티비티를 바로 삭제하기 위해서 noHistroy, excludeFromRecents 사용-->
        <activity android:name=".customBottomSheet"
             android:noHistory="true"
             android:excludeFromRecents="true"
