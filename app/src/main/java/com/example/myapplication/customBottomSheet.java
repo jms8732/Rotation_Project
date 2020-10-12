@@ -16,8 +16,10 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.net.Inet4Address;
 
-public class customBottomSheet extends AppCompatActivity {
+
+public class customBottomSheet extends AppCompatActivity implements View.OnClickListener{
     Button kill, cancel;
 
 
@@ -28,34 +30,21 @@ public class customBottomSheet extends AppCompatActivity {
         setContentView(R.layout.custom_bottom_sheet);
 
         kill = (Button) findViewById(R.id.kill);
+        kill.setOnClickListener(this);
         cancel = (Button) findViewById(R.id.cancel);
-
+        cancel.setOnClickListener(this);
         getWindow().setGravity(Gravity.BOTTOM); //액티비티를 바닥에 표시
 
     }
 
-
     @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            int x = (int) ev.getXPrecision();
-            int y = (int) ev.getYPrecision();
-
-            if (Build.VERSION.SDK_INT >= 18) {
-                Rect kill_rect = new Rect();
-                if(kill.getLocalVisibleRect(kill_rect)){ //컴포넌트의 위치를 파악하기 위한 메소드
-                    //서비스 종료
-                    if(kill_rect.contains(x,y)){
-                        Intent  intent = new Intent(this,RotationService.class);
-                        stopService(intent); //서비스 종료
-                    }
-                }
-                //컴포넌트 종료
-                finish();
-            }
+    public void onClick(View v) {
+        if(v == kill){
+            //서비스 종료
+            Intent intent = new Intent(this,RotationService.class);
+            stopService(intent);
         }
-
-        return super.dispatchTouchEvent(ev);
+        finish();
     }
 
     @Override
