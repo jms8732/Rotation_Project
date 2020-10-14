@@ -12,7 +12,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c8ce916b-2fba-4699-91cc-ec380ca27efa" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/moving_floating_button.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-v24/add_black.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-v24/add_white.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-v24/brightness_5_black.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-v24/brightness_5_white.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/adjust_background.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/values/dimens.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/6.1.1/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/6.1.1/executionHistory/executionHistory.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/6.1.1/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/6.1.1/executionHistory/executionHistory.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/6.1.1/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/6.1.1/fileHashes/fileHashes.bin" afterDir="false" />
@@ -23,13 +28,9 @@
       <change beforePath="$PROJECT_DIR$/.gradle/6.1.1/javaCompile/javaCompile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/6.1.1/javaCompile/javaCompile.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/6.1.1/javaCompile/taskHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/6.1.1/javaCompile/taskHistory.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/app/app.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/app/app.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/MainActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/MainActivity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/RotationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/RotationService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/customBottomSheet.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/customBottomSheet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/custom_bottom_sheet.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/custom_bottom_sheet.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/moving_floating_button.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/moving_floating_button.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,6 +55,7 @@
       <list>
         <option value="resourceFile" />
         <option value="Class" />
+        <option value="valueResourceFile" />
         <option value="layoutResourceFile" />
       </list>
     </option>
@@ -72,7 +74,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="android.sdk.path" value="$USER_HOME$/AppData/Local/Android/Sdk" />
     <property name="last_directory_selection" value="$PROJECT_DIR$/app/src/main/res/drawable-v24" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/app/src/main/res/drawable-v24" />
     <property name="project.structure.last.edited" value="Dependencies" />
     <property name="project.structure.proportion" value="0.17" />
     <property name="project.structure.side.proportion" value="0.19923858" />
@@ -80,6 +82,7 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\toy_project\Rotation_Project\app\src\main\res\drawable-v24" />
       <recent name="D:\toy_project\app\src\main\res\drawable-v24" />
     </key>
   </component>
@@ -173,30 +176,30 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="1082" y="267" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1602500770502" />
-    <state x="932" y="276" key="AndroidCreateResourceFileDialog" timestamp="1602501727387">
+    <state x="932" y="276" key="AndroidCreateResourceFileDialog" timestamp="1602677095522">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="932" y="276" key="AndroidCreateResourceFileDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1602501727387" />
+    <state x="932" y="276" key="AndroidCreateResourceFileDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1602677095522" />
     <state x="1228" y="284" key="AndroidProcessChooserDialog" timestamp="1602164309121">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="1228" y="284" key="AndroidProcessChooserDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1602164309121" />
-    <state width="1018" height="375" key="GridCell.Tab.0.bottom" timestamp="1602505526975">
+    <state width="907" height="327" key="GridCell.Tab.0.bottom" timestamp="1602677787013">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1018" height="375" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1602505526975" />
-    <state width="1018" height="375" key="GridCell.Tab.0.center" timestamp="1602505526974">
+    <state width="907" height="327" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1602677787013" />
+    <state width="907" height="327" key="GridCell.Tab.0.center" timestamp="1602677787012">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1018" height="375" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1602505526974" />
-    <state width="1018" height="375" key="GridCell.Tab.0.left" timestamp="1602505526974">
+    <state width="907" height="327" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1602677787012" />
+    <state width="907" height="327" key="GridCell.Tab.0.left" timestamp="1602677787012">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1018" height="375" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1602505526974" />
-    <state width="1018" height="375" key="GridCell.Tab.0.right" timestamp="1602505526974">
+    <state width="907" height="327" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1602677787012" />
+    <state width="907" height="327" key="GridCell.Tab.0.right" timestamp="1602677787012">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1018" height="375" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1602505526974" />
+    <state width="907" height="327" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1602677787012" />
     <state width="1018" height="375" key="GridCell.Tab.1.bottom" timestamp="1602505526975">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -217,10 +220,10 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="844" y="123" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1602415754928" />
-    <state x="1168" y="288" key="chooseDestDirectoryDialog" timestamp="1602065844744">
+    <state x="1168" y="288" key="chooseDestDirectoryDialog" timestamp="1602582995399">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="1168" y="288" key="chooseDestDirectoryDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1602065844744" />
+    <state x="1168" y="288" key="chooseDestDirectoryDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1602582995399" />
     <state x="864" y="261" key="psd.add.library.dependency.panel.dimension" timestamp="1602141281345">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
