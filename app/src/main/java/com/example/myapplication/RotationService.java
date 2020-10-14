@@ -21,9 +21,12 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -35,7 +38,13 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class RotationService extends Service implements View.OnClickListener {
     private WindowManager manager;
-    private View view;
+    private View view_floating, view_adjust;
+    private long pressTime = 0;
+    private boolean isOpen = false;
+    private FloatingActionButton menu;
+    private RelativeLayout relativeLayout;
+
+    private WindowManager.LayoutParams params = null, layoutParams = null;
 
     @Nullable
     @Override
@@ -49,48 +58,62 @@ public class RotationService extends Service implements View.OnClickListener {
 
         //WindowManager 생성
         manager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        view = LayoutInflater.from(this).inflate(R.layout.moving_floating_button, null);
+        setTheme(R.style.AppTheme);
 
+        view_adjust = LayoutInflater.from(this).inflate(R.layout.adjust_background,null);
+        layoutParams= new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT);
 
-        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                    WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                    PixelFormat.TRANSLUCENT);
+        relativeLayout = (RelativeLayout)view_adjust.findViewById(R.id.adjust_background);
+        relativeLayout.setVisibility(View.INVISIBLE);
 
-            params.gravity = Gravity.BOTTOM | Gravity.RIGHT;
-            params.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
-            manager.addView(view, params);
+        manager.addView(relativeLayout,layoutParams); //조절 백그라운드 붙이기
 
+        view_floating = LayoutInflater.from(this).inflate(R.layout.moving_floating_button, null);
 
-        view.findViewById(R.id.test).setOnTouchListener(new View.OnTouchListener() {
-            private int initialX, initialY;
-            private float initialTouchX, initialTouchY;
+        params = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT);
+
+        params.gravity = Gravity.BOTTOM | Gravity.RIGHT;
+        params.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
+        menu = (FloatingActionButton) view_floating.findViewById(R.id.menu);
+
+        menu.setOnClickListener(this);
+        menu.setOnTouchListener(new View.OnTouchListener() { //floating 버튼 움직임
+            private int initX, initY;
+            private float rawX, rawY;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        initialX = params.x;
-                        initialY = params.y;
-                        initialTouchX = event.getRawX();
-                        initialTouchY = event.getRawY();
-                        return true;
+                        initX = params.x;
+                        initY = params.y;
+                        rawX = event.getRawX();
+                        rawY = event.getRawY();
+                        break;
                     case MotionEvent.ACTION_UP:
-                        return true;
+                        break;
 
                     case MotionEvent.ACTION_MOVE:
-                        params.x = (int)Math.abs (event.getRawX() - initialTouchX);
-                        params.y = (int)Math.abs (event.getRawY() - initialTouchY);
+                        params.x = initX + (int) (rawX- event.getRawX());
+                        params.y = initY + (int) (rawY -event.getRawY());
 
-                        Log.d("jms8732","update X: " + params.x + " Update Y : " + params.y);
-                        manager.updateViewLayout(view, params);
-
-                        return true;
+                        manager.updateViewLayout(view_floating,params);
+                        break;
                 }
+
                 return false;
             }
         });
+
+        manager.addView(view_floating,params);
     }
 
     @Override
@@ -138,17 +161,41 @@ public class RotationService extends Service implements View.OnClickListener {
         return builder.build();
     }
 
-
     @Override
     public void onClick(View v) {
-        Log.d("jms8732", "onClick...");
+        if (v == menu) {
+            if (!isOpen) {
+                open();
+            } else
+                close();
+        }
+    }
+
+    private void open() {
+        isOpen = true;
+        Log.d("jms8732", "Open..");
+        relativeLayout.setVisibility(View.VISIBLE);
+
+        manager.updateViewLayout(view_adjust,layoutParams);
+    }
+
+    private void close() {
+        isOpen = false;
+        Log.d("jms8732", "Close...");
+        relativeLayout.setVisibility(View.INVISIBLE);
+
+        manager.updateViewLayout(view_adjust,layoutParams);
     }
 
     //최상단 뷰 삭제
     private void destroyLinear() {
-        if (ViewCompat.isAttachedToWindow(view)) {
-            manager.removeViewImmediate(view);
+        if (ViewCompat.isAttachedToWindow(view_floating)) {
+            manager.removeViewImmediate(view_floating);
         }
+
+        if(ViewCompat.isAttachedToWindow(view_adjust))
+            manager.removeViewImmediate(view_adjust);
+
     }
 
     @Override
