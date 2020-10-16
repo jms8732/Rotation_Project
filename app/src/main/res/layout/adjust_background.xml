@@ -4,14 +4,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@android:color/transparent">
+    android:background="@android:drawable/screen_background_dark_transparent">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:text="화면 조정"
+        android:id="@+id/title"
+        android:visibility="invisible"
         android:textSize="30dp"
-        android:textColor="#000000"
+        android:textColor="#ffffff"
     />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/blight"
+        android:layout_centerInParent="true"
+        android:textColor="#ffffff"
+        android:textSize="30dp"
+        />
 </RelativeLayout>
