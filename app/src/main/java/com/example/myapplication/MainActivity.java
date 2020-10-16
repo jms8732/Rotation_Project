@@ -68,6 +68,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(intent);
 
             }
+
+            //시스템에 쓰기 위한
+            if(!Settings.System.canWrite(this)){
+                Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS,Uri.parse("package:"+this.getPackageName()));
+                startActivity(intent);
+            }
         }
 
     }

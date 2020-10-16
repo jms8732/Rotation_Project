@@ -11,8 +11,11 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.media.AudioDeviceInfo;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.IBinder;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Display;
@@ -27,6 +30,8 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -39,10 +44,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 public class RotationService extends Service implements View.OnClickListener {
     private WindowManager manager;
     private View view_floating, view_adjust;
-    private long pressTime = 0;
     private boolean isOpen = false;
     private FloatingActionButton menu;
     private RelativeLayout relativeLayout;
+    private TextView title, blight;
 
     private WindowManager.LayoutParams params = null, layoutParams = null;
 
@@ -58,19 +63,48 @@ public class RotationService extends Service implements View.OnClickListener {
 
         //WindowManager 생성
         manager = (WindowManager) getSystemService(WINDOW_SERVICE);
+
         setTheme(R.style.AppTheme);
 
-        view_adjust = LayoutInflater.from(this).inflate(R.layout.adjust_background,null);
-        layoutParams= new WindowManager.LayoutParams(
+        view_adjust = LayoutInflater.from(this).inflate(R.layout.adjust_background, null);
+        title = (TextView) view_adjust.findViewById(R.id.title);
+        blight = (TextView) view_adjust.findViewById(R.id.blight);
+
+        layoutParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
 
-        relativeLayout = (RelativeLayout)view_adjust.findViewById(R.id.adjust_background);
+        relativeLayout = (RelativeLayout) view_adjust.findViewById(R.id.adjust_background);
         relativeLayout.setVisibility(View.INVISIBLE);
 
-        manager.addView(relativeLayout,layoutParams); //조절 백그라운드 붙이기
+        relativeLayout.setOnTouchListener(new OnSwipeTouchListener(getApplicationContext()) {
+            @Override
+            public void onSwipeRight(int speed) {
+                super.onSwipeRight(speed);
+            }
+
+            @Override
+            public void onSwipeLeft(int speed) {
+                super.onSwipeLeft(speed);
+            }
+
+            @Override
+            public void onSwipeTop(int speed) {
+                int current_vol = Settings.System.getInt(getContentResolver(),Settings.System.SCREEN_BRIGHTNESS,0);
+                blight.setText(String.valueOf(current_vol));
+                showView(blight,speed,true);
+            }
+
+            @Override
+            public void onSwipeBottom(int speed) {
+                showView(blight,speed,false);
+            }
+        });
+
+
+        manager.addView(relativeLayout, layoutParams); //조절 백그라운드 붙이기
 
         view_floating = LayoutInflater.from(this).inflate(R.layout.moving_floating_button, null);
 
@@ -102,10 +136,10 @@ public class RotationService extends Service implements View.OnClickListener {
                         break;
 
                     case MotionEvent.ACTION_MOVE:
-                        params.x = initX + (int) (rawX- event.getRawX());
-                        params.y = initY + (int) (rawY -event.getRawY());
+                        params.x = initX + (int) (rawX - event.getRawX());
+                        params.y = initY + (int) (rawY - event.getRawY());
 
-                        manager.updateViewLayout(view_floating,params);
+                        manager.updateViewLayout(view_floating, params);
                         break;
                 }
 
@@ -113,7 +147,7 @@ public class RotationService extends Service implements View.OnClickListener {
             }
         });
 
-        manager.addView(view_floating,params);
+        manager.addView(view_floating, params);
     }
 
     @Override
@@ -176,7 +210,7 @@ public class RotationService extends Service implements View.OnClickListener {
         Log.d("jms8732", "Open..");
         relativeLayout.setVisibility(View.VISIBLE);
 
-        manager.updateViewLayout(view_adjust,layoutParams);
+        manager.updateViewLayout(view_adjust, layoutParams);
     }
 
     private void close() {
@@ -184,7 +218,7 @@ public class RotationService extends Service implements View.OnClickListener {
         Log.d("jms8732", "Close...");
         relativeLayout.setVisibility(View.INVISIBLE);
 
-        manager.updateViewLayout(view_adjust,layoutParams);
+        manager.updateViewLayout(view_adjust, layoutParams);
     }
 
     //최상단 뷰 삭제
@@ -193,7 +227,7 @@ public class RotationService extends Service implements View.OnClickListener {
             manager.removeViewImmediate(view_floating);
         }
 
-        if(ViewCompat.isAttachedToWindow(view_adjust))
+        if (ViewCompat.isAttachedToWindow(view_adjust))
             manager.removeViewImmediate(view_adjust);
 
     }
