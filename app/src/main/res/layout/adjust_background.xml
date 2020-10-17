@@ -20,7 +20,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/blight"
+        android:id="@+id/bright"
         android:layout_centerInParent="true"
         android:textColor="#ffffff"
         android:textSize="30dp"
