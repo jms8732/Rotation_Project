@@ -41,13 +41,13 @@ import androidx.core.view.ViewCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-public class RotationService extends Service implements View.OnClickListener {
+public class ExtraService extends Service implements View.OnClickListener {
     private WindowManager manager;
     private View view_floating, view_adjust;
     private boolean isOpen = false;
     private FloatingActionButton menu;
     private RelativeLayout relativeLayout;
-    private TextView title, blight;
+    private TextView title, bright;
 
     private WindowManager.LayoutParams params = null, layoutParams = null;
 
@@ -68,8 +68,9 @@ public class RotationService extends Service implements View.OnClickListener {
 
         view_adjust = LayoutInflater.from(this).inflate(R.layout.adjust_background, null);
         title = (TextView) view_adjust.findViewById(R.id.title);
-        blight = (TextView) view_adjust.findViewById(R.id.blight);
+        bright = (TextView) view_adjust.findViewById(R.id.bright);
 
+        bright.setText(String.valueOf(convert_bright(Settings.System.getFloat(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, 0.0f))));
         layoutParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
@@ -81,26 +82,32 @@ public class RotationService extends Service implements View.OnClickListener {
 
         relativeLayout.setOnTouchListener(new OnSwipeTouchListener(getApplicationContext()) {
             @Override
-            public void onSwipeRight(int speed) {
-                super.onSwipeRight(speed);
+            public void onSwipeRight() {
             }
 
             @Override
-            public void onSwipeLeft(int speed) {
-                super.onSwipeLeft(speed);
+            public void onSwipeLeft() {
             }
 
             @Override
-            public void onSwipeTop(int speed) {
-                int current_vol = Settings.System.getInt(getContentResolver(),Settings.System.SCREEN_BRIGHTNESS,0);
-                blight.setText(String.valueOf(current_vol));
-                showView(blight,speed,true);
+            public void onSwipeTop() {
+                int current_bright = Integer.parseInt(bright.getText().toString());
+                if(current_bright + 1 <= 100) {
+                    Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, (int) (++current_bright * 2.55f));
+                    bright.setText(String.valueOf(current_bright));
+                }
+
             }
 
             @Override
-            public void onSwipeBottom(int speed) {
-                showView(blight,speed,false);
+            public void onSwipeBottom() {
+                int current_bright = Integer.parseInt(bright.getText().toString());
+                if(current_bright -1 >= 0 ) {
+                    Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, (int) (--current_bright * 2.55f));
+                    bright.setText(String.valueOf(current_bright));
+                }
             }
+
         });
 
 
@@ -203,6 +210,10 @@ public class RotationService extends Service implements View.OnClickListener {
             } else
                 close();
         }
+    }
+
+    private int convert_bright(float bright) {
+        return (int) (bright * 100 / 255);
     }
 
     private void open() {

@@ -31,136 +31,64 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
     }
 
     private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
-        private static final int SWIPE_THRESHOLD = 100;
-
+        private static final int SWIPE_THRESHOLD = 50;
+        private static final int SWIPE_VELOCITY_THRESHOLD = 50;
+        private float startX , startY;
         @Override
         public boolean onDown(MotionEvent e) {
+            startX = e.getX();
+            startY = e.getY();
             return true;
         }
 
         @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            return super.onScroll(e1, e2, distanceX, distanceY);
-        }
-
-        @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            boolean result = false;
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) { boolean result = false;
             try {
-                float diffY = e2.getY() - e1.getY();
-                float diffX = e2.getX() - e1.getX();
+                float diffY = e2.getY() - startY;
+                float diffX = e2.getX() - startX;
+
                 if (Math.abs(diffX) > Math.abs(diffY)) {
-                    if (Math.abs(diffX) > 0) {
-                        int speed = speed(Math.abs(diffX));
+                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(diffX) > SWIPE_VELOCITY_THRESHOLD) {
                         if (diffX > 0) {
-                            onSwipeRight(speed);
+                            onSwipeRight();
                         } else {
-                            onSwipeLeft(speed);
+                            onSwipeLeft();
                         }
                     }
+                    startX = e2.getX();
+                    startY = e2.getY();
                     result = true;
-                } else if (Math.abs(diffY) > 0) {
-                    int speed = speed(Math.abs(diffY));
+                } else if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(diffY) > SWIPE_VELOCITY_THRESHOLD) {
                     if (diffY > 0) {
-                        onSwipeBottom(speed);
+                        onSwipeBottom();
                     } else {
-                        onSwipeTop(speed);
+                        onSwipeTop();
                     }
+                    startX = e2.getX();
+                    startY = e2.getY();
+                    result = true;
                 }
-                result = true;
 
             } catch (Exception exception) {
                 exception.printStackTrace();
             }
             return result;
         }
+
     }
 
-    //가속도에 따라 반환되는 스피드
-    private int speed(float diff) {
-        Log.d("jms8732","Diff : " + diff);
-        int ret =0 ;
-        if(diff >= 100){
-            ret = (int)(diff/100);
 
-            if(ret >= 10)
-                ret = 10;
-        }
-
-        return ret;
+    public void onSwipeRight() {
     }
 
-    public void onSwipeRight(int speed) {
+    public void onSwipeLeft() {
     }
 
-    public void onSwipeLeft(int speed) {
+    public void onSwipeTop() {
     }
 
-    public void onSwipeTop(int speed) {
+    public void onSwipeBottom() {
     }
 
-    public void onSwipeBottom(int speed) {
-    }
-
-    //TextView에 보여지는 화면
-    public void showView(final TextView textView, int speed, boolean plus){
-        if(plus) {
-            new AsyncTask<Integer, Integer, Integer>() {
-
-                @Override
-                protected void onPostExecute(Integer integer) {
-                    textView.setText(String.valueOf(integer));
-                    Settings.System.putInt(context.getContentResolver(),Settings.System.SCREEN_BRIGHTNESS,integer);
-                }
-
-                @Override
-                protected void onProgressUpdate(Integer... values) {
-                    int val = values[0];
-                    Settings.System.putInt(context.getContentResolver(),Settings.System.SCREEN_BRIGHTNESS,val);
-                    textView.setText(String.valueOf(val));
-                }
-
-                @Override
-                protected Integer doInBackground(Integer... integers) {
-                    int temp = integers[0];
-                    int start = Integer.parseInt(textView.getText().toString()); //초기 시작
-                    for (int i = 0; i < temp; i++) {
-                        publishProgress(start++);
-                        SystemClock.sleep(100);
-                    }
-
-                    return start;
-                }
-            }.execute(speed);
-        }else{
-            new AsyncTask<Integer, Integer, Integer>() {
-
-                @Override
-                protected void onPostExecute(Integer integer) {
-                    textView.setText(String.valueOf(integer));
-                    Settings.System.putInt(context.getContentResolver(),Settings.System.SCREEN_BRIGHTNESS,integer);
-                }
-
-                @Override
-                protected void onProgressUpdate(Integer... values) {
-                    int val = values[0];
-                    Settings.System.putInt(context.getContentResolver(),Settings.System.SCREEN_BRIGHTNESS,val);
-                    textView.setText(String.valueOf(val));
-                }
-
-                @Override
-                protected Integer doInBackground(Integer... integers) {
-                    int temp = integers[0];
-                    int start = Integer.parseInt(textView.getText().toString()); //초기 시작
-                    for (int i = 0; i < temp; i++) {
-                        publishProgress(start--);
-                        SystemClock.sleep(100);
-                    }
-
-                    return start;
-                }
-            }.execute(speed);
-        }
-    }
 }
 

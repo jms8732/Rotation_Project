@@ -1,22 +1,14 @@
 package com.example.myapplication;
 
 import android.content.Intent;
-import android.graphics.Rect;
-import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
-import java.net.Inet4Address;
 
 
 public class customBottomSheet extends AppCompatActivity implements View.OnClickListener{
@@ -41,7 +33,7 @@ public class customBottomSheet extends AppCompatActivity implements View.OnClick
     public void onClick(View v) {
         if(v == kill){
             //서비스 종료
-            Intent intent = new Intent(this,RotationService.class);
+            Intent intent = new Intent(this, ExtraService.class);
             stopService(intent);
         }
         finish();
