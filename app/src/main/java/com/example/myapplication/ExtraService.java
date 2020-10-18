@@ -27,6 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -37,6 +38,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.WindowCallbackWrapper;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.ViewCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -47,7 +49,10 @@ public class ExtraService extends Service implements View.OnClickListener {
     private boolean isOpen = false;
     private FloatingActionButton menu;
     private RelativeLayout relativeLayout;
-    private TextView title, bright;
+    private TextView number;
+    private AudioManager audioManager;
+    private ImageView imageView;
+    private int init_volume = 0, init_bright = 0;
 
     private WindowManager.LayoutParams params = null, layoutParams = null;
 
@@ -63,14 +68,24 @@ public class ExtraService extends Service implements View.OnClickListener {
 
         //WindowManager 생성
         manager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 
         setTheme(R.style.AppTheme);
 
         view_adjust = LayoutInflater.from(this).inflate(R.layout.adjust_background, null);
-        title = (TextView) view_adjust.findViewById(R.id.title);
-        bright = (TextView) view_adjust.findViewById(R.id.bright);
 
-        bright.setText(String.valueOf(convert_bright(Settings.System.getFloat(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, 0.0f))));
+        //초기 밝기와 볼륨을 얻는다.
+        init_volume = convert_volume(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
+        init_bright = convert_bright(Settings.System.getInt(getContentResolver(),Settings.System.SCREEN_BRIGHTNESS,0));
+
+        //밝기, 볼륨을 나타내는 TextView 설정
+        number = (TextView)view_adjust.findViewById(R.id.number);
+        number.setVisibility(View.INVISIBLE);
+
+        //밝기, 볼륨을 나타내는 이미즤
+        imageView = (ImageView)view_adjust.findViewById(R.id.image);
+        imageView.setVisibility(View.INVISIBLE);
+
         layoutParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
@@ -83,31 +98,78 @@ public class ExtraService extends Service implements View.OnClickListener {
         relativeLayout.setOnTouchListener(new OnSwipeTouchListener(getApplicationContext()) {
             @Override
             public void onSwipeRight() {
+                number.setVisibility(View.VISIBLE);
+                number.setText(init_volume+"%");
+                String vol = number.getText().toString().replace("%", "");
+
+                imageView.setImageDrawable(ResourcesCompat.getDrawable(getResources(),R.drawable.sound_icon_white,null));
+                imageView.setVisibility(View.VISIBLE);
+
+                int current_vol = Integer.parseInt(vol);
+                if (current_vol + 1 <= 100) {
+                    number.setText(++current_vol + "%");
+                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (int) (current_vol * 0.15), AudioManager.FLAG_PLAY_SOUND);
+                    init_volume = current_vol;
+                }
             }
 
             @Override
             public void onSwipeLeft() {
+                number.setVisibility(View.VISIBLE);
+                number.setText(init_volume+"%");
+                String vol = number.getText().toString().replace("%", "");
+
+                imageView.setImageDrawable(ResourcesCompat.getDrawable(getResources(),R.drawable.sound_icon_white,null));
+                imageView.setVisibility(View.VISIBLE);
+
+                int current_vol = Integer.parseInt(vol);
+                if (current_vol - 1 >= 0) {
+                    number.setText(--current_vol + "%");
+                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (int) (current_vol * 0.15), AudioManager.FLAG_PLAY_SOUND);
+                    init_volume = current_vol;
+                }
             }
 
             @Override
             public void onSwipeTop() {
-                int current_bright = Integer.parseInt(bright.getText().toString());
-                if(current_bright + 1 <= 100) {
+                number.setVisibility(View.VISIBLE);
+                number.setText(String.valueOf(init_bright));
+                int current_bright = Integer.parseInt(number.getText().toString());
+
+                imageView.setImageDrawable(ResourcesCompat.getDrawable(getResources(),R.drawable.white_sun,null));
+                imageView.setVisibility(View.VISIBLE);
+
+                if (current_bright + 1 <= 100) {
                     Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, (int) (++current_bright * 2.55f));
-                    bright.setText(String.valueOf(current_bright));
+                    number.setText(String.valueOf(current_bright));
+                    init_bright = current_bright;
                 }
 
             }
 
             @Override
             public void onSwipeBottom() {
-                int current_bright = Integer.parseInt(bright.getText().toString());
-                if(current_bright -1 >= 0 ) {
+                number.setVisibility(View.VISIBLE);
+                number.setText(String.valueOf(init_bright));
+                int current_bright = Integer.parseInt(number.getText().toString());
+
+                imageView.setImageDrawable(ResourcesCompat.getDrawable(getResources(),R.drawable.white_sun,null));
+                imageView.setVisibility(View.VISIBLE);
+
+                if (current_bright - 1 >= 0) {
                     Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, (int) (--current_bright * 2.55f));
-                    bright.setText(String.valueOf(current_bright));
+                    number.setText(String.valueOf(current_bright));
+                    init_bright = current_bright;
                 }
             }
 
+            @Override
+            public void invisible_view() {
+                if(number.getVisibility() == View.VISIBLE){
+                    number.setVisibility(View.INVISIBLE);
+                }
+                imageView.setVisibility(View.INVISIBLE);
+            }
         });
 
 
@@ -212,13 +274,18 @@ public class ExtraService extends Service implements View.OnClickListener {
         }
     }
 
+    //초기 음량 변환
+    private int convert_volume(int vol) {
+        return (int) (vol * 100 / 15);
+    }
+
+    //초기 밝기 변환
     private int convert_bright(float bright) {
         return (int) (bright * 100 / 255);
     }
 
     private void open() {
         isOpen = true;
-        Log.d("jms8732", "Open..");
         relativeLayout.setVisibility(View.VISIBLE);
 
         manager.updateViewLayout(view_adjust, layoutParams);
@@ -226,7 +293,6 @@ public class ExtraService extends Service implements View.OnClickListener {
 
     private void close() {
         isOpen = false;
-        Log.d("jms8732", "Close...");
         relativeLayout.setVisibility(View.INVISIBLE);
 
         manager.updateViewLayout(view_adjust, layoutParams);
