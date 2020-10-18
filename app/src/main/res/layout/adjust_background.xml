@@ -17,12 +17,22 @@
         android:textColor="#ffffff"
     />
 
+    <ImageView
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:scaleType="centerInside"
+        android:id="@+id/image"
+        android:layout_toLeftOf="@+id/number"
+        android:layout_centerInParent="true"
+        android:layout_marginRight="15dp" />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/bright"
+        android:id="@+id/number"
         android:layout_centerInParent="true"
         android:textColor="#ffffff"
         android:textSize="30dp"
         />
+
 </RelativeLayout>
