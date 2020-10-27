@@ -15,8 +15,10 @@ import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.drawable.GradientDrawable;
+import android.icu.util.LocaleData;
 import android.media.AudioManager;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
@@ -26,6 +28,8 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.ViewParent;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AnimationSet;
@@ -41,14 +45,15 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.ViewPropertyAnimatorListener;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class ExtraService extends Service {
     private WindowManager manager;
     private View mBackground, mfloating, mContent;
-    private boolean isOpen = false, isRotation = false, onTop = false;
-    private RelativeLayout aBackground;
+    private boolean isOpen = false, isRotation = false, onPoint = false;
+    private RelativeLayout aBackground, test;
     private TextView number;
     private AudioManager audioManager;
     private ImageView imageView;
@@ -57,6 +62,7 @@ public class ExtraService extends Service {
     private Display display;
     private Point size;
     private int startX, startY;
+    private int LAYOUT_FLAG;
 
     @Nullable
     @Override
@@ -72,6 +78,12 @@ public class ExtraService extends Service {
         manager = (WindowManager) getSystemService(WINDOW_SERVICE);
         audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         setTheme(R.style.AppTheme);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        } else {
+            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_PHONE;
+        }
 
         size = new Point();
         getSize();
@@ -143,7 +155,7 @@ public class ExtraService extends Service {
 
         bParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                LAYOUT_FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
 
@@ -230,56 +242,72 @@ public class ExtraService extends Service {
         manager.addView(aBackground, bParams); //조절 백그라운드 붙이기
     }
 
-
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         getSize();
 
-        if (onTop) {
+        if (onPoint) {
             //Floating button이 Top | left에 있는 경우
-            fParams.x = -size.x/2;
-            fParams.y = -size.y/2;
+            fParams.x = -size.x / 2;
+            fParams.y = -size.y / 2;
             manager.updateViewLayout(mfloating, fParams);
         }
     }
 
+
     private void init_mFloating() {
         mfloating = LayoutInflater.from(this).inflate(R.layout.moving_floating_button, null);
-
         fParams = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.WRAP_CONTENT
+                , WindowManager.LayoutParams.WRAP_CONTENT,
+                LAYOUT_FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
 
-        fParams.x = size.x /2;
-        fParams.y = size.y /2;
+        fParams.x = size.x / 2;
+        fParams.y = size.y / 2;
         fParams.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
 
-        FloatingActionButton button = (FloatingActionButton) mfloating.findViewById(R.id.menu);
-        button.setOnClickListener(new View.OnClickListener() {
+        //floating 내용물 레이아웃
+        cParams = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT,
+                LAYOUT_FLAG,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT
+        );
+
+        //cParams.gravity = Gravity.TOP | Gravity.LEFT;
+        mContent = LayoutInflater.from(this).inflate(R.layout.moving_button_content, null);
+        test = (RelativeLayout) mContent.findViewById(R.id.test);
+
+        final FloatingActionButton fab = (FloatingActionButton) mfloating.findViewById(R.id.fabIcon);
+
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!onTop) {
-                    onTop = true;
-                    move2Dimension(fParams.x, fParams.y, -size.x/2 , -size.y/2, 2000);
+                if (!onPoint) {
+                    onPoint = true;
+                    //4방향의 꼭지점 중 가까운 방향으로 이동
+                    int[] end_point = direction(fParams.x, fParams.y);
+                    setGravity(end_point[0],end_point[1]);
+                    move2Dimension(fParams.x, fParams.y, end_point[0], end_point[1], 500, 0);
                 } else {
-                    onTop = false;
-                    if (ViewCompat.isAttachedToWindow(mContent))
-                        manager.removeViewImmediate(mContent);
-                    move2Dimension(fParams.x, fParams.y, startX, startY, 2000);
+                    onPoint = false;
+                    test.setGravity(Gravity.CENTER);
+                    test.setVisibility(View.GONE);
+                    move2Dimension(fParams.x, fParams.y, startX, startY, 500, 0);
                 }
             }
         });
 
-        button.setOnTouchListener(new View.OnTouchListener() {
+        fab.setOnTouchListener(new View.OnTouchListener() {
             private int initX, initY;
             private float rawX, rawY;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (!onTop) {
+                if (!onPoint) {
                     switch (event.getAction()) {
                         case MotionEvent.ACTION_DOWN:
                             initX = fParams.x;
@@ -302,21 +330,50 @@ public class ExtraService extends Service {
             }
         });
 
-        //floating 내용물 레이아웃
-        cParams = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                PixelFormat.TRANSLUCENT
-        );
-
-        cParams.gravity = Gravity.TOP | Gravity.LEFT;
-        
-        mContent = LayoutInflater.from(getApplicationContext()).inflate(R.layout.moving_button_content, null);
+        cParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
+        manager.addView(mContent,cParams);
         manager.addView(mfloating, fParams);
     }
 
-    private void move2Dimension(int sx, int sy, int ex, int ey, int duration) {
+
+    //방향을 결정하는 메소드
+    private int[] direction(float startX, float startY) {
+        int[] ret = new int[2];
+
+        if (startY < 0 && startX < 0) { // TOP || LEFT
+            ret[0] = -size.x / 2;
+            ret[1] = -size.y / 2;
+        } else if (startX > 0 && startY < 0) { //TOP || RIGHT
+            ret[0] = size.x / 2;
+            ret[1] = -size.y / 2;
+        } else if (startX < 0 && startY > 0) {
+            ret[0] = -size.x / 2;
+            ret[1] = size.y / 2;
+        } else {
+            ret[0] = size.x / 2;
+            ret[1] = size.y / 2;
+        }
+
+        return ret;
+    }
+
+    private  void setGravity(float x, float y){
+        if(x < 0 && y < 0){
+            cParams.gravity =Gravity.TOP | Gravity.LEFT;
+            test.setGravity(Gravity.TOP | Gravity.LEFT);
+        }else if(x >0 && y< 0){
+            cParams.gravity =Gravity.TOP | Gravity.RIGHT;
+            test.setGravity(Gravity.TOP | Gravity.RIGHT);
+        }else if(x < 0 && y >0 ){
+            cParams.gravity =Gravity.BOTTOM | Gravity.LEFT;
+            test.setGravity(Gravity.BOTTOM | Gravity.LEFT);
+        }else {
+            cParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
+            test.setGravity(Gravity.BOTTOM | Gravity.RIGHT);
+        }
+    }
+
+    private void move2Dimension(int sx, int sy, final int ex, int ey, int duration, int delay) {
         startX = sx;
         startY = sy;
         //x좌표
@@ -328,6 +385,7 @@ public class ExtraService extends Service {
                 int x = (int) animation.getAnimatedValue();
                 fParams.x = x;
                 manager.updateViewLayout(mfloating, fParams);
+                manager.updateViewLayout(mContent,fParams);
             }
         });
 
@@ -339,6 +397,7 @@ public class ExtraService extends Service {
                 int y = (int) animation.getAnimatedValue();
                 fParams.y = y;
                 manager.updateViewLayout(mfloating, fParams);
+                manager.updateViewLayout(mContent,fParams);
             }
         });
 
@@ -346,15 +405,15 @@ public class ExtraService extends Service {
         animatorSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
-
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                if (onTop) { //현재 Floating button이 최상단에 존재할 때
-                    cParams.x = 0;
-                    cParams.y = mfloating.getHeight();
-                    manager.addView(mContent, cParams);
+                if (onPoint) { //각각의 꼭지점에 잇는 경우
+                    test.setVisibility(View.VISIBLE);
+                    manager.updateViewLayout(mContent,cParams);
+                    manager.updateViewLayout(mfloating, fParams);
+                } else {
                 }
             }
 
@@ -368,7 +427,9 @@ public class ExtraService extends Service {
 
             }
         });
+
         animatorSet.playTogether(x_ani, y_ani);
+        animatorSet.setStartDelay(delay);
         animatorSet.setDuration(duration);
         animatorSet.setInterpolator(new AccelerateDecelerateInterpolator());
         animatorSet.start();

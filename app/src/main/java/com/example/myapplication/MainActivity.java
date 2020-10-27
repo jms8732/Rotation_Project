@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         plug = (Switch) findViewById(R.id.plug);
         plug.setOnClickListener(this);
-        prefs = getSharedPreferences("pref",MODE_PRIVATE);
+        prefs = getSharedPreferences("pref", MODE_PRIVATE);
 
         Log.d("jms8732", "Toggle: " + checked);
 
@@ -52,17 +52,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //화면 전환을 permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             //오버레이 권한 설정
-            if(!Settings.canDrawOverlays(this)){
-                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:"+this.getPackageName()));
+            if (!Settings.canDrawOverlays(this)) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + this.getPackageName()));
                 startActivity(intent);
 
             }
 
             //시스템에 쓰기 위한
-            if(!Settings.System.canWrite(this)){
-                Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS,Uri.parse("package:"+this.getPackageName()));
+            if (!Settings.System.canWrite(this)) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:" + this.getPackageName()));
                 startActivity(intent);
             }
+        } else {
+            Intent intent1 = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + this.getPackageName()));
+            startActivity(intent1);
+
+            //시스템에 쓰기 위한
+            Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:" + this.getPackageName()));
+            startActivity(intent);
+
         }
 
     }
@@ -70,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d("jms8732","Activity resume");
+        Log.d("jms8732", "Activity resume");
     }
 
     @Override
