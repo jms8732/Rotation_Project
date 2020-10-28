@@ -11,4 +11,5 @@
     <color name="red">#db3434</color>
     <color name="green">#11b900</color>
     <color name="yellow">#ffff00</color>
+    <color name="floating_background">#EF5350</color>
 </resources>

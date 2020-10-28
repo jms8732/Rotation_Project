@@ -12,10 +12,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
-import android.graphics.drawable.GradientDrawable;
-import android.icu.util.LocaleData;
+import android.graphics.drawable.AnimationDrawable;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
@@ -27,25 +27,17 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
-import android.view.ViewParent;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.AnimationSet;
-import android.view.animation.TranslateAnimation;
+import android.view.animation.PathInterpolator;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.ViewCompat;
-import androidx.core.view.ViewPropertyAnimatorListener;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -53,7 +45,7 @@ public class ExtraService extends Service {
     private WindowManager manager;
     private View mBackground, mfloating, mContent;
     private boolean isOpen = false, isRotation = false, onPoint = false;
-    private RelativeLayout aBackground, test;
+    private RelativeLayout aBackground, aContent;
     private TextView number;
     private AudioManager audioManager;
     private ImageView imageView;
@@ -63,7 +55,7 @@ public class ExtraService extends Service {
     private Point size;
     private int startX, startY;
     private int LAYOUT_FLAG;
-
+    private AnimationDrawable animationDrawable; //Floating button 애니메이션
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -257,6 +249,7 @@ public class ExtraService extends Service {
 
 
     private void init_mFloating() {
+        //floating button
         mfloating = LayoutInflater.from(this).inflate(R.layout.moving_floating_button, null);
         fParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT
@@ -277,11 +270,12 @@ public class ExtraService extends Service {
                 PixelFormat.TRANSLUCENT
         );
 
-        //cParams.gravity = Gravity.TOP | Gravity.LEFT;
-        mContent = LayoutInflater.from(this).inflate(R.layout.moving_button_content, null);
-        test = (RelativeLayout) mContent.findViewById(R.id.test);
+        cParams.x = fParams.x;
+        cParams.y = fParams.y;
 
-        final FloatingActionButton fab = (FloatingActionButton) mfloating.findViewById(R.id.fabIcon);
+        mContent = LayoutInflater.from(this).inflate(R.layout.moving_button_content, null);
+        aContent = (RelativeLayout) mContent.findViewById(R.id.test);
+        final ImageView fab = (ImageView) mfloating.findViewById(R.id.fabIcon);
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -289,18 +283,29 @@ public class ExtraService extends Service {
                 if (!onPoint) {
                     onPoint = true;
                     //4방향의 꼭지점 중 가까운 방향으로 이동
+                    fab.setBackgroundResource(R.drawable.floating_button_expand);
+                    animationDrawable = (AnimationDrawable)fab.getBackground();
+                    animationDrawable.start();
                     int[] end_point = direction(fParams.x, fParams.y);
-                    setGravity(end_point[0],end_point[1]);
-                    move2Dimension(fParams.x, fParams.y, end_point[0], end_point[1], 500, 0);
+                    setGravity(end_point[0], end_point[1]);
+                    move2Dimension(fParams.x, fParams.y, end_point[0], end_point[1], 700);
                 } else {
                     onPoint = false;
-                    test.setGravity(Gravity.CENTER);
-                    test.setVisibility(View.GONE);
-                    move2Dimension(fParams.x, fParams.y, startX, startY, 500, 0);
+                    moveFab(0, 0);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            fab.setBackgroundResource(R.drawable.floating_button_collapse);
+                            animationDrawable = (AnimationDrawable)fab.getBackground();
+                            animationDrawable.start();
+                            move2Dimension(fParams.x, fParams.y, startX, startY, 700);
+                        }
+                    }, 500);
                 }
             }
         });
 
+        //floating button 이동 리스너
         fab.setOnTouchListener(new View.OnTouchListener() {
             private int initX, initY;
             private float rawX, rawY;
@@ -323,6 +328,7 @@ public class ExtraService extends Service {
                             fParams.y = initY + (int) (event.getRawY() - rawY);
 
                             manager.updateViewLayout(mfloating, fParams);
+                            manager.updateViewLayout(mContent, fParams);
                             break;
                     }
                 }
@@ -330,8 +336,7 @@ public class ExtraService extends Service {
             }
         });
 
-        cParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
-        manager.addView(mContent,cParams);
+        manager.addView(mContent, cParams);
         manager.addView(mfloating, fParams);
     }
 
@@ -357,35 +362,70 @@ public class ExtraService extends Service {
         return ret;
     }
 
-    private  void setGravity(float x, float y){
-        if(x < 0 && y < 0){
-            cParams.gravity =Gravity.TOP | Gravity.LEFT;
-            test.setGravity(Gravity.TOP | Gravity.LEFT);
-        }else if(x >0 && y< 0){
-            cParams.gravity =Gravity.TOP | Gravity.RIGHT;
-            test.setGravity(Gravity.TOP | Gravity.RIGHT);
-        }else if(x < 0 && y >0 ){
-            cParams.gravity =Gravity.BOTTOM | Gravity.LEFT;
-            test.setGravity(Gravity.BOTTOM | Gravity.LEFT);
-        }else {
+    private void setGravity(float x, float y) {
+        if (x < 0 && y < 0) {
+            cParams.gravity = Gravity.TOP | Gravity.LEFT;
+        } else if (x > 0 && y < 0) {
+            cParams.gravity = Gravity.TOP | Gravity.RIGHT;
+        } else if (x < 0 && y > 0) {
+            cParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
+        } else {
             cParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
-            test.setGravity(Gravity.BOTTOM | Gravity.RIGHT);
         }
+
+        aContent.setGravity(cParams.gravity);
     }
 
-    private void move2Dimension(int sx, int sy, final int ex, int ey, int duration, int delay) {
+    //floating button을 누른 후, 나오는 floating button들
+    private void moveFab(int x, int y) {
+        int g = aContent.getGravity();
+
+        int size = aContent.getChildCount();
+        final FloatingActionButton[] f_array = new FloatingActionButton[size];
+        for (int i = 0; i < size; i++) {
+            f_array[i] = (FloatingActionButton) aContent.getChildAt(i);
+        }
+
+        if (g == (Gravity.TOP | Gravity.LEFT)) {
+        } else if (g == (Gravity.TOP | Gravity.RIGHT)) {
+            x *= -1;
+        } else if (g == (Gravity.BOTTOM | Gravity.LEFT)) {
+            y *= -1;
+        } else {
+            y *= -1;
+            x *= -1;
+        }
+
+        if (onPoint) {
+            f_array[0].animate().setDuration(550).alpha(1).start();
+            f_array[1].animate().setDuration(500).alpha(1).start();
+        } else {
+            f_array[0].animate().setDuration(550).alpha(0).start();
+            f_array[1].animate().setDuration(500).alpha(0).start();
+        }
+
+        f_array[0].animate().setDuration(500).translationX(x).start();
+        f_array[0].animate().setDuration(500).translationY(y / 3).start();
+        f_array[1].animate().setDuration(500).translationX(x / 3).start();
+        f_array[1].animate().setDuration(500).translationY(y).start();
+    }
+
+    private void move2Dimension(int sx, int sy, final int ex, int ey, int duration) {
         startX = sx;
         startY = sy;
+
+        final RelativeLayout.LayoutParams c_params = (RelativeLayout.LayoutParams) aContent.getLayoutParams();
+
         //x좌표
         ValueAnimator x_ani = ValueAnimator.ofInt(sx, ex);
-
         x_ani.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 int x = (int) animation.getAnimatedValue();
                 fParams.x = x;
                 manager.updateViewLayout(mfloating, fParams);
-                manager.updateViewLayout(mContent,fParams);
+                manager.updateViewLayout(mContent, fParams);
+
             }
         });
 
@@ -397,7 +437,7 @@ public class ExtraService extends Service {
                 int y = (int) animation.getAnimatedValue();
                 fParams.y = y;
                 manager.updateViewLayout(mfloating, fParams);
-                manager.updateViewLayout(mContent,fParams);
+                manager.updateViewLayout(mContent, fParams);
             }
         });
 
@@ -405,15 +445,18 @@ public class ExtraService extends Service {
         animatorSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
+                if (!onPoint) {
+                    c_params.width = WindowManager.LayoutParams.WRAP_CONTENT;
+                    c_params.height = WindowManager.LayoutParams.WRAP_CONTENT;
+                }
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                if (onPoint) { //각각의 꼭지점에 잇는 경우
-                    test.setVisibility(View.VISIBLE);
-                    manager.updateViewLayout(mContent,cParams);
-                    manager.updateViewLayout(mfloating, fParams);
-                } else {
+                if (onPoint) { //각각의 꼭지점에 Floating Button이 존재하는 경우
+                    c_params.width = 300;
+                    c_params.height = 300;
+                    moveFab(150, 150);
                 }
             }
 
@@ -428,9 +471,10 @@ public class ExtraService extends Service {
             }
         });
 
+
         animatorSet.playTogether(x_ani, y_ani);
-        animatorSet.setStartDelay(delay);
         animatorSet.setDuration(duration);
+
         animatorSet.setInterpolator(new AccelerateDecelerateInterpolator());
         animatorSet.start();
     }
