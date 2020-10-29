@@ -3,7 +3,7 @@
     <item>
         <shape android:shape="oval">
             <size android:width="56dp" android:height="56dp"/>
-            <solid android:color="@color/floating_background"/>
+            <solid android:color="#757575"/>
         </shape>
     </item>
     <item android:drawable="@drawable/edit"
