@@ -44,18 +44,20 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 public class ExtraService extends Service {
     private WindowManager manager;
     private View mBackground, mfloating, mContent;
-    private boolean isOpen = false, isRotation = false, onPoint = false;
+    private boolean isOpen = false, isRotation, onPoint = false;
     private RelativeLayout aBackground, aContent;
     private TextView number;
     private AudioManager audioManager;
-    private ImageView imageView;
+    private ImageView imageView, fab1,fab2;
     private int init_volume = 0, init_bright = 0;
     private WindowManager.LayoutParams bParams, fParams, cParams;
     private Display display;
     private Point size;
     private int startX, startY;
     private int LAYOUT_FLAG;
-    private AnimationDrawable animationDrawable; //Floating button 애니메이션
+    private AnimationDrawable animationDrawable, animationDrawable1; //Floating button 애니메이션
+    private SharedPreferences prefs;
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -76,6 +78,9 @@ public class ExtraService extends Service {
         } else {
             LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_PHONE;
         }
+
+        prefs = getSharedPreferences("pref", MODE_PRIVATE);
+        isRotation = prefs.getBoolean("rotation",false);
 
         size = new Point();
         getSize();
@@ -231,7 +236,7 @@ public class ExtraService extends Service {
             }
         });
 
-        manager.addView(aBackground, bParams); //조절 백그라운드 붙이기
+        manager.addView(mBackground, bParams); //조절 백그라운드 붙이기
     }
 
     @Override
@@ -260,7 +265,6 @@ public class ExtraService extends Service {
 
         fParams.x = size.x / 2;
         fParams.y = size.y / 2;
-        fParams.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
 
         //floating 내용물 레이아웃
         cParams = new WindowManager.LayoutParams(
@@ -270,11 +274,55 @@ public class ExtraService extends Service {
                 PixelFormat.TRANSLUCENT
         );
 
-        cParams.x = fParams.x;
-        cParams.y = fParams.y;
+        //cParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
 
         mContent = LayoutInflater.from(this).inflate(R.layout.moving_button_content, null);
         aContent = (RelativeLayout) mContent.findViewById(R.id.test);
+        fab1 = (ImageView)mContent.findViewById(R.id.rotation);
+        ((View)(fab1)).setAlpha(0);
+
+        if(isRotation){
+            fab1.setBackgroundResource(R.drawable.floating_button_rotation);
+            fParams.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
+        }else{
+            fab1.setBackgroundResource(R.drawable.floating_button_rotation_lock);
+            fParams.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        }
+
+        fab1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!isRotation){
+                    //현재 로테이션인 경우
+                    fParams.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
+                    fab1.setBackgroundResource(R.drawable.floating_button_rotation_unlock_ani);
+                }else{
+                    fParams.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                    fab1.setBackgroundResource(R.drawable.floating_button_rotation_lock_ani);
+                }
+
+                animationDrawable1 = (AnimationDrawable)fab1.getBackground();
+                animationDrawable1.start();
+                manager.updateViewLayout(mfloating,fParams);
+                isRotation = !isRotation;
+            }
+        });
+
+        fab2 = (ImageView)mContent.findViewById(R.id.settings);
+        fab2.setBackgroundResource(R.drawable.floating_button_settings);
+        ((View)(fab2)).setAlpha(0);
+        fab2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!isOpen){
+                    aBackground.setVisibility(View.VISIBLE);
+                }else{
+                    aBackground.setVisibility(View.GONE);
+                }
+                isOpen = !isOpen;
+            }
+        });
+
         final ImageView fab = (ImageView) mfloating.findViewById(R.id.fabIcon);
 
         fab.setOnClickListener(new View.OnClickListener() {
@@ -287,18 +335,25 @@ public class ExtraService extends Service {
                     animationDrawable = (AnimationDrawable)fab.getBackground();
                     animationDrawable.start();
                     int[] end_point = direction(fParams.x, fParams.y);
+
                     setGravity(end_point[0], end_point[1]);
-                    move2Dimension(fParams.x, fParams.y, end_point[0], end_point[1], 700);
+                    move2Dimension(fParams.x, fParams.y, end_point[0], end_point[1], 650);
                 } else {
                     onPoint = false;
                     moveFab(0, 0);
+
+                    if(isOpen){
+                        isOpen= false;
+                        aBackground.setVisibility(View.GONE);
+                    }
+
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             fab.setBackgroundResource(R.drawable.floating_button_collapse);
                             animationDrawable = (AnimationDrawable)fab.getBackground();
                             animationDrawable.start();
-                            move2Dimension(fParams.x, fParams.y, startX, startY, 700);
+                            move2Dimension(fParams.x, fParams.y, startX, startY, 650);
                         }
                     }, 500);
                 }
@@ -328,7 +383,6 @@ public class ExtraService extends Service {
                             fParams.y = initY + (int) (event.getRawY() - rawY);
 
                             manager.updateViewLayout(mfloating, fParams);
-                            manager.updateViewLayout(mContent, fParams);
                             break;
                     }
                 }
@@ -374,6 +428,7 @@ public class ExtraService extends Service {
         }
 
         aContent.setGravity(cParams.gravity);
+        manager.updateViewLayout(mContent,cParams);
     }
 
     //floating button을 누른 후, 나오는 floating button들
@@ -381,9 +436,9 @@ public class ExtraService extends Service {
         int g = aContent.getGravity();
 
         int size = aContent.getChildCount();
-        final FloatingActionButton[] f_array = new FloatingActionButton[size];
+        final View[] f_array = new View[size];
         for (int i = 0; i < size; i++) {
-            f_array[i] = (FloatingActionButton) aContent.getChildAt(i);
+            f_array[i] = aContent.getChildAt(i);
         }
 
         if (g == (Gravity.TOP | Gravity.LEFT)) {
@@ -407,14 +462,34 @@ public class ExtraService extends Service {
         f_array[0].animate().setDuration(500).translationX(x).start();
         f_array[0].animate().setDuration(500).translationY(y / 3).start();
         f_array[1].animate().setDuration(500).translationX(x / 3).start();
-        f_array[1].animate().setDuration(500).translationY(y).start();
+        f_array[1].animate().setDuration(500).translationY(y).setListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if(!onPoint) {
+                    aContent.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        }).start();
     }
 
     private void move2Dimension(int sx, int sy, final int ex, int ey, int duration) {
         startX = sx;
         startY = sy;
-
-        final RelativeLayout.LayoutParams c_params = (RelativeLayout.LayoutParams) aContent.getLayoutParams();
 
         //x좌표
         ValueAnimator x_ani = ValueAnimator.ofInt(sx, ex);
@@ -424,7 +499,6 @@ public class ExtraService extends Service {
                 int x = (int) animation.getAnimatedValue();
                 fParams.x = x;
                 manager.updateViewLayout(mfloating, fParams);
-                manager.updateViewLayout(mContent, fParams);
 
             }
         });
@@ -437,7 +511,6 @@ public class ExtraService extends Service {
                 int y = (int) animation.getAnimatedValue();
                 fParams.y = y;
                 manager.updateViewLayout(mfloating, fParams);
-                manager.updateViewLayout(mContent, fParams);
             }
         });
 
@@ -445,18 +518,13 @@ public class ExtraService extends Service {
         animatorSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
-                if (!onPoint) {
-                    c_params.width = WindowManager.LayoutParams.WRAP_CONTENT;
-                    c_params.height = WindowManager.LayoutParams.WRAP_CONTENT;
-                }
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
                 if (onPoint) { //각각의 꼭지점에 Floating Button이 존재하는 경우
-                    c_params.width = 300;
-                    c_params.height = 300;
-                    moveFab(150, 150);
+                    aContent.setVisibility(View.VISIBLE);
+                    moveFab(200,200);
                 }
             }
 
@@ -521,13 +589,10 @@ public class ExtraService extends Service {
         super.onDestroy();
 
         destroyLinear();
-        SharedPreferences prefs = getSharedPreferences("pref", MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("status", false);
+        editor.putBoolean("rotation", isRotation);
         editor.apply();
 
-        Intent intent = new Intent("com.example.ROTATION_ACTIVITY");
-        sendBroadcast(intent);
     }
 
 }

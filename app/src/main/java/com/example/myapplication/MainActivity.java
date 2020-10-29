@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -13,41 +14,39 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Switch;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    Switch plug;
-    SharedPreferences prefs;
-    boolean checked = false;
+    private Button button;
+    private boolean check;
+    private ActivityManager manager;
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        registerReceiver(receiver, new IntentFilter("com.example.ROTATION_ACTIVITY"));
 
-    }
 
-    BroadcastReceiver receiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            plug.setChecked(false);
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        plug = (Switch) findViewById(R.id.plug);
-        plug.setOnClickListener(this);
-        prefs = getSharedPreferences("pref", MODE_PRIVATE);
+        if (manager == null)
+            manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
 
-        Log.d("jms8732", "Toggle: " + checked);
+        //현재 Foreground 서비스가 진행되고 있는 지 확인하는 반복문
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (ExtraService.class.getName().equals(service.service.getClassName())) {
+                check = true;
+            }
+        }
 
-        checked = prefs.getBoolean("status", false);
+        button = (Button) findViewById(R.id.button);
+        button.setOnClickListener(this);
 
-        plug.setChecked(checked);
+        if(!check){
+            button.setText("Start Service");
+        }else
+            button.setText("Stop Service");
 
         //화면 전환을 permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -76,38 +75,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d("jms8732", "Activity resume");
-    }
-
-    @Override
     public void onClick(View v) {
-        if (v == plug) {
-            SharedPreferences.Editor editor = prefs.edit();
-            Intent intent = new Intent(this, ExtraService.class);
-            checked = prefs.getBoolean("status", false);
-
-            if (!checked) { //스위치를 키는 경우
-                checked = true;
-                if (Build.VERSION.SDK_INT >= 26)
-                    startForegroundService(intent);
-                else
-                    startService(intent);
+        Intent intent = new Intent(this, ExtraService.class);
+        if (!check) {
+            if (Build.VERSION.SDK_INT >= 26) {
+                startForegroundService(intent);
+                finishAndRemoveTask();
             } else {
-                checked = false;
-                stopService(intent);
+                startService(intent);
+                finishAndRemoveTask();
             }
-
-            plug.setChecked(checked);
-            editor.putBoolean("status", checked);
-            editor.apply();
+        }else {
+            stopService(intent);
+            button.setText("Start Service");
+            check = false;
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(receiver);
-    }
 }
