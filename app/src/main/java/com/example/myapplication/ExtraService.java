@@ -3,6 +3,7 @@ package com.example.myapplication;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -19,7 +20,9 @@ import android.graphics.drawable.AnimationDrawable;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Display;
@@ -29,6 +32,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.view.animation.PathInterpolator;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -41,14 +46,18 @@ import androidx.core.view.ViewCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-public class ExtraService extends Service {
+import java.sql.Time;
+import java.util.Timer;
+import java.util.TimerTask;
+
+public class ExtraService extends Service implements View.OnClickListener {
     private WindowManager manager;
     private View mBackground, mfloating, mContent;
     private boolean isOpen = false, isRotation, onPoint = false;
     private RelativeLayout aBackground, aContent;
     private TextView number;
     private AudioManager audioManager;
-    private ImageView imageView, fab1,fab2;
+    private ImageView imageView, fab, fab1, fab2;
     private int init_volume = 0, init_bright = 0;
     private WindowManager.LayoutParams bParams, fParams, cParams;
     private Display display;
@@ -80,7 +89,7 @@ public class ExtraService extends Service {
         }
 
         prefs = getSharedPreferences("pref", MODE_PRIVATE);
-        isRotation = prefs.getBoolean("rotation",false);
+        isRotation = prefs.getBoolean("rotation", false);
 
         size = new Point();
         getSize();
@@ -278,87 +287,26 @@ public class ExtraService extends Service {
 
         mContent = LayoutInflater.from(this).inflate(R.layout.moving_button_content, null);
         aContent = (RelativeLayout) mContent.findViewById(R.id.test);
-        fab1 = (ImageView)mContent.findViewById(R.id.rotation);
-        ((View)(fab1)).setAlpha(0);
 
-        if(isRotation){
-            fab1.setBackgroundResource(R.drawable.floating_button_rotation);
-            fParams.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
-        }else{
-            fab1.setBackgroundResource(R.drawable.floating_button_rotation_lock);
-            fParams.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-        }
+        fab = (ImageView) mfloating.findViewById(R.id.fabIcon);
+        fab.setOnClickListener(this);
 
-        fab1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!isRotation){
-                    //현재 로테이션인 경우
-                    fParams.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
-                    fab1.setBackgroundResource(R.drawable.floating_button_rotation_unlock_ani);
-                }else{
-                    fParams.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-                    fab1.setBackgroundResource(R.drawable.floating_button_rotation_lock_ani);
-                }
+        fab1 = (ImageView) mContent.findViewById(R.id.rotation);
+        fab1.setOnClickListener(this);
+        ((View) (fab1)).setAlpha(0);
 
-                animationDrawable1 = (AnimationDrawable)fab1.getBackground();
-                animationDrawable1.start();
-                manager.updateViewLayout(mfloating,fParams);
-                isRotation = !isRotation;
-            }
-        });
-
-        fab2 = (ImageView)mContent.findViewById(R.id.settings);
+        fab2 = (ImageView) mContent.findViewById(R.id.settings);
+        fab2.setOnClickListener(this);
+        ((View) (fab2)).setAlpha(0);
         fab2.setBackgroundResource(R.drawable.floating_button_settings);
-        ((View)(fab2)).setAlpha(0);
-        fab2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!isOpen){
-                    aBackground.setVisibility(View.VISIBLE);
-                }else{
-                    aBackground.setVisibility(View.GONE);
-                }
-                isOpen = !isOpen;
-            }
-        });
 
-        final ImageView fab = (ImageView) mfloating.findViewById(R.id.fabIcon);
-
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!onPoint) {
-                    onPoint = true;
-                    //4방향의 꼭지점 중 가까운 방향으로 이동
-                    fab.setBackgroundResource(R.drawable.floating_button_expand);
-                    animationDrawable = (AnimationDrawable)fab.getBackground();
-                    animationDrawable.start();
-                    int[] end_point = direction(fParams.x, fParams.y);
-
-                    setGravity(end_point[0], end_point[1]);
-                    move2Dimension(fParams.x, fParams.y, end_point[0], end_point[1], 650);
-                } else {
-                    onPoint = false;
-                    moveFab(0, 0);
-
-                    if(isOpen){
-                        isOpen= false;
-                        aBackground.setVisibility(View.GONE);
-                    }
-
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            fab.setBackgroundResource(R.drawable.floating_button_collapse);
-                            animationDrawable = (AnimationDrawable)fab.getBackground();
-                            animationDrawable.start();
-                            move2Dimension(fParams.x, fParams.y, startX, startY, 650);
-                        }
-                    }, 500);
-                }
-            }
-        });
+        if (isRotation) {
+            fab1.setBackgroundResource(R.drawable.floating_button_rotation);
+            Settings.System.putInt(getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, 1);
+        } else {
+            fab1.setBackgroundResource(R.drawable.floating_button_rotation_lock);
+            Settings.System.putInt(getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, 0);
+        }
 
         //floating button 이동 리스너
         fab.setOnTouchListener(new View.OnTouchListener() {
@@ -394,6 +342,62 @@ public class ExtraService extends Service {
         manager.addView(mfloating, fParams);
     }
 
+    @Override
+    public void onClick(View v) {
+        if(v == fab) {
+            if (!onPoint) {
+                onPoint = true;
+                //4방향의 꼭지점 중 가까운 방향으로 이동
+                fab.setBackgroundResource(R.drawable.floating_button_expand);
+                animationDrawable = (AnimationDrawable) fab.getBackground();
+                animationDrawable.start();
+                int[] end_point = direction(fParams.x, fParams.y);
+
+                setGravity(end_point[0], end_point[1]);
+                move2Dimension(fParams.x, fParams.y, end_point[0], end_point[1], 650);
+            } else {
+                onPoint = false;
+                moveFab(0, 0);
+
+                if (isOpen) {
+                    isOpen = false;
+                    aBackground.setVisibility(View.GONE);
+                }
+
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        fab.setBackgroundResource(R.drawable.floating_button_collapse);
+                        animationDrawable = (AnimationDrawable) fab.getBackground();
+                        animationDrawable.start();
+                        move2Dimension(fParams.x, fParams.y, startX, startY, 650);
+                    }
+                }, 500);
+            }
+        }else if(v == fab1){
+            if (!isRotation) {
+                //현재 로테이션인 경우
+                Settings.System.putInt(getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, 1);
+                fab1.setBackgroundResource(R.drawable.floating_button_rotation_unlock_ani);
+            } else {
+
+                Settings.System.putInt(getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, 0);
+                fab1.setBackgroundResource(R.drawable.floating_button_rotation_lock_ani);
+            }
+
+            animationDrawable1 = (AnimationDrawable) fab1.getBackground();
+            animationDrawable1.start();
+            manager.updateViewLayout(mfloating, fParams);
+            isRotation = !isRotation;
+        }else if(v == fab2){
+            if (!isOpen) {
+                aBackground.setVisibility(View.VISIBLE);
+            } else {
+                aBackground.setVisibility(View.GONE);
+            }
+            isOpen = !isOpen;
+        }
+    }
 
     //방향을 결정하는 메소드
     private int[] direction(float startX, float startY) {
@@ -428,7 +432,7 @@ public class ExtraService extends Service {
         }
 
         aContent.setGravity(cParams.gravity);
-        manager.updateViewLayout(mContent,cParams);
+        manager.updateViewLayout(mContent, cParams);
     }
 
     //floating button을 누른 후, 나오는 floating button들
@@ -470,7 +474,7 @@ public class ExtraService extends Service {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                if(!onPoint) {
+                if (!onPoint) {
                     aContent.setVisibility(View.GONE);
                 }
             }
@@ -524,7 +528,7 @@ public class ExtraService extends Service {
             public void onAnimationEnd(Animator animation) {
                 if (onPoint) { //각각의 꼭지점에 Floating Button이 존재하는 경우
                     aContent.setVisibility(View.VISIBLE);
-                    moveFab(200,200);
+                    moveFab(200, 200);
                 }
             }
 
