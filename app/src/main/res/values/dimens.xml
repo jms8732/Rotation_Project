@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="standard_55">155dp</dimen>
-    <dimen name="floating_background">120dp</dimen>
+    <dimen name="floating_background">140dp</dimen>
+    <dimen name="main_float_size">48dp</dimen>
+    <dimen name="main_float_icon_size">24dp</dimen>
+    <dimen name="setting_float_size">36dp</dimen>
+    <dimen name="setting_float_icon_size">18dp</dimen>
     </resources>

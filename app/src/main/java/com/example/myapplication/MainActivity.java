@@ -22,9 +22,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean check;
     private ActivityManager manager;
 
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
