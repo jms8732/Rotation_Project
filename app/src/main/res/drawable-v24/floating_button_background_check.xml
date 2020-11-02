@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <size android:width="@dimen/main_float_size" android:height="@dimen/main_float_size"/>
+            <solid android:color="@color/green"/>
+        </shape>
+    </item>
+    <item android:drawable="@drawable/check"
+        android:width="@dimen/main_float_icon_size" android:height="@dimen/main_float_icon_size"
+        android:gravity="center"/>
+</layer-list>

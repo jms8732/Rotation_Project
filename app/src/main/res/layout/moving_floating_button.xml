@@ -12,6 +12,4 @@
         android:background="@drawable/floating_button_background_edit"
         android:id="@+id/fabIcon"/>
 
-
-
 </RelativeLayout>

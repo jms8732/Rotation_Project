@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity;
 public class customBottomSheet extends AppCompatActivity implements View.OnClickListener{
     Button kill, cancel;
 
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

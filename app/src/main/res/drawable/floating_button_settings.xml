@@ -2,11 +2,11 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="oval">
-            <size android:width="40dp" android:height="40dp"/>
-            <solid android:color="@color/floating_background"/>
+            <size android:width="@dimen/setting_float_size" android:height="@dimen/setting_float_size"/>
+            <solid android:color="@color/orange"/>
         </shape>
     </item>
     <item android:drawable="@drawable/settings"
-        android:width="18dp" android:height="18dp"
+        android:width="@dimen/setting_float_icon_size" android:height="@dimen/setting_float_icon_size"
         android:gravity="center"/>
 </layer-list>

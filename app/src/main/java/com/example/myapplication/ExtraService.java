@@ -3,7 +3,6 @@ package com.example.myapplication;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
-import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -11,18 +10,16 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.graphics.Path;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Display;
@@ -32,9 +29,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.PathInterpolator;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -44,11 +38,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.ViewCompat;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import java.sql.Time;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Arrays;
 
 public class ExtraService extends Service implements View.OnClickListener {
     private WindowManager manager;
@@ -57,8 +47,8 @@ public class ExtraService extends Service implements View.OnClickListener {
     private RelativeLayout aBackground, aContent;
     private TextView number;
     private AudioManager audioManager;
-    private ImageView imageView, fab, fab1, fab2;
-    private int init_volume = 0, init_bright = 0;
+    private ImageView imageView, fab, fab1, fab2, fab3;
+    private int init_volume = 0, init_bright = 0, back_len;
     private WindowManager.LayoutParams bParams, fParams, cParams;
     private Display display;
     private Point size;
@@ -66,6 +56,18 @@ public class ExtraService extends Service implements View.OnClickListener {
     private int LAYOUT_FLAG;
     private AnimationDrawable animationDrawable, animationDrawable1; //Floating button 애니메이션
     private SharedPreferences prefs;
+    private final float SET_ALPHA = 0.5f;
+    private final long TIME = 3000;
+
+    //터치를 안했을 시, 버튼의 알파값 애니메이션 수행
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            fab.animate().alpha(SET_ALPHA);
+        }
+    };
+
+    private Handler handler;
 
     @Nullable
     @Override
@@ -82,11 +84,17 @@ public class ExtraService extends Service implements View.OnClickListener {
         audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         setTheme(R.style.AppTheme);
 
+
+        handler = new Handler();
+        handler.postDelayed(runnable, TIME);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         } else {
             LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_PHONE;
         }
+
+        back_len = (int) (getResources().getDimension(R.dimen.floating_background) / getResources().getDisplayMetrics().density);
 
         prefs = getSharedPreferences("pref", MODE_PRIVATE);
         isRotation = prefs.getBoolean("rotation", false);
@@ -130,8 +138,8 @@ public class ExtraService extends Service implements View.OnClickListener {
         } else
             builder = new NotificationCompat.Builder(this);
 
-        builder.setContentTitle("Rotation Service")
-                .setContentText("Rotation Running")
+        builder.setContentTitle("Extra Service")
+                .setContentText("Extra Service Running")
                 .setSmallIcon(R.drawable.screen_rotation_white)
                 .setWhen(System.currentTimeMillis())
                 .setContentIntent(pIntent)
@@ -283,22 +291,10 @@ public class ExtraService extends Service implements View.OnClickListener {
                 PixelFormat.TRANSLUCENT
         );
 
-        //cParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
-
         mContent = LayoutInflater.from(this).inflate(R.layout.moving_button_content, null);
         aContent = (RelativeLayout) mContent.findViewById(R.id.test);
 
-        fab = (ImageView) mfloating.findViewById(R.id.fabIcon);
-        fab.setOnClickListener(this);
-
-        fab1 = (ImageView) mContent.findViewById(R.id.rotation);
-        fab1.setOnClickListener(this);
-        ((View) (fab1)).setAlpha(0);
-
-        fab2 = (ImageView) mContent.findViewById(R.id.settings);
-        fab2.setOnClickListener(this);
-        ((View) (fab2)).setAlpha(0);
-        fab2.setBackgroundResource(R.drawable.floating_button_settings);
+        fabContentSetting();
 
         if (isRotation) {
             fab1.setBackgroundResource(R.drawable.floating_button_rotation);
@@ -318,6 +314,7 @@ public class ExtraService extends Service implements View.OnClickListener {
                 if (!onPoint) {
                     switch (event.getAction()) {
                         case MotionEvent.ACTION_DOWN:
+                            updateAlpha(true);
                             initX = fParams.x;
                             initY = fParams.y;
                             rawX = event.getRawX();
@@ -331,6 +328,7 @@ public class ExtraService extends Service implements View.OnClickListener {
                             fParams.y = initY + (int) (event.getRawY() - rawY);
 
                             manager.updateViewLayout(mfloating, fParams);
+                            updateAlpha(false);
                             break;
                     }
                 }
@@ -342,9 +340,40 @@ public class ExtraService extends Service implements View.OnClickListener {
         manager.addView(mfloating, fParams);
     }
 
+    //내용물 fab
+    private void fabContentSetting() {
+        fab = (ImageView) mfloating.findViewById(R.id.fabIcon);
+        fab.setOnClickListener(this);
+
+        fab1 = (ImageView) mContent.findViewById(R.id.rotation);
+        fab1.setOnClickListener(this);
+        ((View) (fab1)).setAlpha(0);
+
+        fab2 = (ImageView) mContent.findViewById(R.id.settings);
+        fab2.setOnClickListener(this);
+        ((View) (fab2)).setAlpha(0);
+        fab2.setBackgroundResource(R.drawable.floating_button_settings);
+
+        fab3 = (ImageView) mContent.findViewById(R.id.delete);
+        fab3.setOnClickListener(this);
+        ((View) (fab3)).setAlpha(0);
+        fab3.setBackgroundResource(R.drawable.floating_button_delete);
+    }
+
+    private void updateAlpha(boolean up) {
+        if (up) {
+            handler.removeCallbacks(runnable);
+            ((View) fab).setAlpha(1.0f);
+        } else {
+            handler.postDelayed(runnable, TIME);
+        }
+    }
+
     @Override
     public void onClick(View v) {
-        if(v == fab) {
+        updateAlpha(true);
+
+        if (v == fab) {
             if (!onPoint) {
                 onPoint = true;
                 //4방향의 꼭지점 중 가까운 방향으로 이동
@@ -354,27 +383,28 @@ public class ExtraService extends Service implements View.OnClickListener {
                 int[] end_point = direction(fParams.x, fParams.y);
 
                 setGravity(end_point[0], end_point[1]);
-                move2Dimension(fParams.x, fParams.y, end_point[0], end_point[1], 650);
+                move2Dimension(fParams.x, fParams.y, end_point[0], end_point[1], 800);
             } else {
                 onPoint = false;
-                moveFab(0, 0);
+                moveFab();
 
                 if (isOpen) {
                     isOpen = false;
                     aBackground.setVisibility(View.GONE);
                 }
 
+                updateAlpha(false);
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         fab.setBackgroundResource(R.drawable.floating_button_collapse);
                         animationDrawable = (AnimationDrawable) fab.getBackground();
                         animationDrawable.start();
-                        move2Dimension(fParams.x, fParams.y, startX, startY, 650);
+                        move2Dimension(fParams.x, fParams.y, startX, startY, 800);
                     }
                 }, 500);
             }
-        }else if(v == fab1){
+        } else if (v == fab1) {
             if (!isRotation) {
                 //현재 로테이션인 경우
                 Settings.System.putInt(getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, 1);
@@ -389,14 +419,18 @@ public class ExtraService extends Service implements View.OnClickListener {
             animationDrawable1.start();
             manager.updateViewLayout(mfloating, fParams);
             isRotation = !isRotation;
-        }else if(v == fab2){
+        } else if (v == fab2) {
             if (!isOpen) {
                 aBackground.setVisibility(View.VISIBLE);
             } else {
                 aBackground.setVisibility(View.GONE);
             }
             isOpen = !isOpen;
+        } else if (v == fab3) {
+            Intent intent = new Intent(this,customBottomSheet.class);
+            startActivity(intent);
         }
+
     }
 
     //방향을 결정하는 메소드
@@ -436,37 +470,60 @@ public class ExtraService extends Service implements View.OnClickListener {
     }
 
     //floating button을 누른 후, 나오는 floating button들
-    private void moveFab(int x, int y) {
+    private void moveFab() {
         int g = aContent.getGravity();
-
+        int alpha_idx = 0;
         int size = aContent.getChildCount();
         final View[] f_array = new View[size];
         for (int i = 0; i < size; i++) {
             f_array[i] = aContent.getChildAt(i);
         }
 
+        int x_dir = 0, y_dir = 0;
         if (g == (Gravity.TOP | Gravity.LEFT)) {
+            x_dir = 1;
+            y_dir = 1;
         } else if (g == (Gravity.TOP | Gravity.RIGHT)) {
-            x *= -1;
+            x_dir = -1;
+            y_dir = 1;
         } else if (g == (Gravity.BOTTOM | Gravity.LEFT)) {
-            y *= -1;
+            x_dir = 1;
+            y_dir = -1;
         } else {
-            y *= -1;
-            x *= -1;
+            x_dir = -1;
+            y_dir = -1;
         }
+
+        if (onPoint)
+            alpha_idx = 1;
+
+        for (View v : f_array) {
+            v.animate().setDuration(500).alpha(alpha_idx).start();
+        }
+
+        float x[] = new float[size];
+        float y[] = new float[size];
 
         if (onPoint) {
-            f_array[0].animate().setDuration(550).alpha(1).start();
-            f_array[1].animate().setDuration(500).alpha(1).start();
-        } else {
-            f_array[0].animate().setDuration(550).alpha(0).start();
-            f_array[1].animate().setDuration(500).alpha(0).start();
+            x[0] = 1 * x_dir * back_len;
+            y[0] = 0;
+
+            for (int i = 1; i < size - 1; i++) {
+                x[i] = (float) Math.sin(Math.toRadians((i + 1) * (90 / size))) * x_dir * back_len;
+                y[i] = (float) Math.sin(Math.toRadians((i + 1) * (90 / size))) * y_dir * back_len;
+            }
+
+            x[size - 1] = 0 * x_dir * back_len;
+            y[size - 1] = 1 * y_dir * back_len;
         }
 
-        f_array[0].animate().setDuration(500).translationX(x).start();
-        f_array[0].animate().setDuration(500).translationY(y / 3).start();
-        f_array[1].animate().setDuration(500).translationX(x / 3).start();
-        f_array[1].animate().setDuration(500).translationY(y).setListener(new Animator.AnimatorListener() {
+        for (int i = 0; i < size - 1; i++) {
+            f_array[i].animate().setDuration(500).translationX(x[i]).start();
+            f_array[i].animate().setDuration(500).translationY(y[i]).start();
+        }
+
+        f_array[size - 1].animate().setDuration(500).translationX(x[size - 1]).start();
+        f_array[size - 1].animate().setDuration(500).translationY(y[size - 1]).setListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
 
@@ -489,6 +546,7 @@ public class ExtraService extends Service implements View.OnClickListener {
 
             }
         }).start();
+
     }
 
     private void move2Dimension(int sx, int sy, final int ex, int ey, int duration) {
@@ -518,6 +576,18 @@ public class ExtraService extends Service implements View.OnClickListener {
             }
         });
 
+        ValueAnimator color_ani;
+        int before, after;
+        if (onPoint) {
+            before = Color.parseColor("#757575");
+            after = Color.parseColor("#11b900");
+        } else {
+            before = Color.parseColor("#11b900");
+            after = Color.parseColor("#757575");
+        }
+
+        color_ani = ValueAnimator.ofArgb(before, after);
+
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.addListener(new Animator.AnimatorListener() {
             @Override
@@ -528,7 +598,7 @@ public class ExtraService extends Service implements View.OnClickListener {
             public void onAnimationEnd(Animator animation) {
                 if (onPoint) { //각각의 꼭지점에 Floating Button이 존재하는 경우
                     aContent.setVisibility(View.VISIBLE);
-                    moveFab(200, 200);
+                    moveFab();
                 }
             }
 
@@ -544,7 +614,7 @@ public class ExtraService extends Service implements View.OnClickListener {
         });
 
 
-        animatorSet.playTogether(x_ani, y_ani);
+        animatorSet.playTogether(x_ani, y_ani, color_ani);
         animatorSet.setDuration(duration);
 
         animatorSet.setInterpolator(new AccelerateDecelerateInterpolator());
@@ -584,8 +654,6 @@ public class ExtraService extends Service implements View.OnClickListener {
             display.getRealSize(size);
         else
             display.getSize(size);
-
-        Log.d("jms8732", "width: " + size.x + " height: " + size.y);
     }
 
     @Override
@@ -596,7 +664,5 @@ public class ExtraService extends Service implements View.OnClickListener {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean("rotation", isRotation);
         editor.apply();
-
     }
-
 }

@@ -17,7 +17,7 @@
             android:layout_above="@id/horizon"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="50dp"
-            android:text="Rotation 종료"
+            android:text="서비스 종료"
             android:textColor="#ffffff"
             android:textSize="25dp" />
 

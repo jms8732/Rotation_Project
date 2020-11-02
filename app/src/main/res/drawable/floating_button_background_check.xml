@@ -2,11 +2,11 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="oval">
-            <size android:width="56dp" android:height="56dp"/>
+            <size android:width="@dimen/main_float_size" android:height="@dimen/main_float_size"/>
             <solid android:color="@color/green"/>
         </shape>
     </item>
     <item android:drawable="@drawable/check"
-        android:width="28dp" android:height="28dp"
+        android:width="@dimen/main_float_icon_size" android:height="@dimen/main_float_icon_size"
         android:gravity="center"/>
 </layer-list>
