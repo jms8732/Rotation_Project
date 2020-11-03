@@ -3,12 +3,12 @@
 
 
 ## Environment
-* IDE : Eclipse IDE for Java Developers - 2019-12  
 * CPU : Intel Core i5-6200U @ 2.30GHz  
 * OS : Windows 10 Home 64 bit  
 * Memory : 4096MB
 * Language : Java
 * IDE : Android Studio
+* Android os : Oreo, 
 
 ## Result
 ![0_30](https://user-images.githubusercontent.com/26684848/97865851-35ab3780-1d4e-11eb-9e51-c2bfcf830e9f.gif)
