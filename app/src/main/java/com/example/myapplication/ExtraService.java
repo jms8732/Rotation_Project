@@ -427,7 +427,8 @@ public class ExtraService extends Service implements View.OnClickListener {
             }
             isOpen = !isOpen;
         } else if (v == fab3) {
-            Intent intent = new Intent(this,customBottomSheet.class);
+            Intent intent = new Intent(getApplicationContext(),customBottomSheet.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         }
 
