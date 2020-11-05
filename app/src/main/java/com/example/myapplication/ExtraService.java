@@ -259,14 +259,29 @@ public class ExtraService extends Service implements View.OnClickListener {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+
+        Log.d("jms8732","onConfigurationChanged");
+
+        //비율에 맞춰서 위치 조정
+
+        int preWidth = size.x;
+        int preHeight = size.y;
+        
         getSize();
 
-        if (onPoint) {
-            //Floating button이 Top | left에 있는 경우
-            fParams.x = -size.x / 2;
-            fParams.y = -size.y / 2;
-            manager.updateViewLayout(mfloating, fParams);
-        }
+        int convertX =  size.x * fParams.x / preWidth;
+        int convertY = size.y * fParams.y / preHeight;
+
+        int convertStartX = size.x * startX / preWidth;
+        int convertStartY = size.y * startY / preHeight;
+
+        fParams.x = convertX;
+        fParams.y = convertY;
+
+        startX = convertStartX;
+        startY = convertStartY;
+
+        manager.updateViewLayout(mfloating,fParams);
     }
 
 
