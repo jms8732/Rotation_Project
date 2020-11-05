@@ -14,6 +14,8 @@
     <list default="true" id="c8ce916b-2fba-4699-91cc-ec380ca27efa" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/ExtraService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/ExtraService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/dimens.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values/dimens.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/integers.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values/integers.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,8 +59,8 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
-    <property name="DeviceAndSnapshotComboBoxAction.selectedDevice" value="127.0.0.1:5555" />
-    <property name="DeviceAndSnapshotComboBoxAction.selectionTime" value="2020-11-02T11:18:43.586Z" />
+    <property name="DeviceAndSnapshotComboBoxAction.selectedDevice" value="ce081718ccc7d91804" />
+    <property name="DeviceAndSnapshotComboBoxAction.selectionTime" value="2020-11-05T02:08:29.375Z" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="android.sdk.path" value="$USER_HOME$/AppData/Local/Android/Sdk" />
     <property name="last_directory_selection" value="$PROJECT_DIR$/app/src/main/res/drawable-v24" />
@@ -349,38 +351,38 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="1149" y="244" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1604328422587" />
-    <state width="1009" height="269" key="GridCell.Tab.0.bottom" timestamp="1604324899672">
+    <state width="1092" height="224" key="GridCell.Tab.0.bottom" timestamp="1604541946425">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1009" height="269" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1604324899672" />
-    <state width="1009" height="269" key="GridCell.Tab.0.center" timestamp="1604324899672">
+    <state width="1092" height="224" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1604541946425" />
+    <state width="1092" height="224" key="GridCell.Tab.0.center" timestamp="1604541946424">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1009" height="269" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1604324899672" />
-    <state width="1009" height="269" key="GridCell.Tab.0.left" timestamp="1604324899672">
+    <state width="1092" height="224" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1604541946424" />
+    <state width="1092" height="224" key="GridCell.Tab.0.left" timestamp="1604541946424">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1009" height="269" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1604324899672" />
-    <state width="1009" height="269" key="GridCell.Tab.0.right" timestamp="1604324899672">
+    <state width="1092" height="224" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1604541946424" />
+    <state width="1092" height="224" key="GridCell.Tab.0.right" timestamp="1604541946424">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1009" height="269" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1604324899672" />
-    <state width="1009" height="427" key="GridCell.Tab.1.bottom" timestamp="1604316148553">
+    <state width="1092" height="224" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1604541946424" />
+    <state width="1092" height="224" key="GridCell.Tab.1.bottom" timestamp="1604541946425">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1009" height="427" key="GridCell.Tab.1.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1604316148553" />
-    <state width="1009" height="427" key="GridCell.Tab.1.center" timestamp="1604316148553">
+    <state width="1092" height="224" key="GridCell.Tab.1.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1604541946425" />
+    <state width="1092" height="224" key="GridCell.Tab.1.center" timestamp="1604541946425">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1009" height="427" key="GridCell.Tab.1.center/0.0.1920.1040@0.0.1920.1040" timestamp="1604316148553" />
-    <state width="1009" height="427" key="GridCell.Tab.1.left" timestamp="1604316148553">
+    <state width="1092" height="224" key="GridCell.Tab.1.center/0.0.1920.1040@0.0.1920.1040" timestamp="1604541946425" />
+    <state width="1092" height="224" key="GridCell.Tab.1.left" timestamp="1604541946425">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1009" height="427" key="GridCell.Tab.1.left/0.0.1920.1040@0.0.1920.1040" timestamp="1604316148553" />
-    <state width="1009" height="427" key="GridCell.Tab.1.right" timestamp="1604316148553">
+    <state width="1092" height="224" key="GridCell.Tab.1.left/0.0.1920.1040@0.0.1920.1040" timestamp="1604541946425" />
+    <state width="1092" height="224" key="GridCell.Tab.1.right" timestamp="1604541946425">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1009" height="427" key="GridCell.Tab.1.right/0.0.1920.1040@0.0.1920.1040" timestamp="1604316148553" />
+    <state width="1092" height="224" key="GridCell.Tab.1.right/0.0.1920.1040@0.0.1920.1040" timestamp="1604541946425" />
     <state x="844" y="123" key="SettingsEditor" timestamp="1602415754928">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -407,13 +409,18 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/example/myapplication/ExtraService.java</url>
-          <line>423</line>
+          <line>421</line>
           <option name="timeStamp" value="3" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/example/myapplication/ExtraService.java</url>
-          <line>535</line>
+          <line>533</line>
           <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
+          <url>file://$PROJECT_DIR$/app/src/main/java/com/example/myapplication/ExtraService.java</url>
+          <line>96</line>
+          <option name="timeStamp" value="5" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

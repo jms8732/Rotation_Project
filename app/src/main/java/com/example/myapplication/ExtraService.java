@@ -260,13 +260,11 @@ public class ExtraService extends Service implements View.OnClickListener {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        Log.d("jms8732","onConfigurationChanged");
-
         //비율에 맞춰서 위치 조정
 
         int preWidth = size.x;
         int preHeight = size.y;
-        
+
         getSize();
 
         int convertX =  size.x * fParams.x / preWidth;
@@ -398,7 +396,7 @@ public class ExtraService extends Service implements View.OnClickListener {
                 int[] end_point = direction(fParams.x, fParams.y);
 
                 setGravity(end_point[0], end_point[1]);
-                move2Dimension(fParams.x, fParams.y, end_point[0], end_point[1], 800);
+                move2Dimension(fParams.x, fParams.y, end_point[0], end_point[1], 500);
             } else {
                 onPoint = false;
                 moveFab();
@@ -415,7 +413,7 @@ public class ExtraService extends Service implements View.OnClickListener {
                         fab.setBackgroundResource(R.drawable.floating_button_collapse);
                         animationDrawable = (AnimationDrawable) fab.getBackground();
                         animationDrawable.start();
-                        move2Dimension(fParams.x, fParams.y, startX, startY, 800);
+                        move2Dimension(fParams.x, fParams.y, startX, startY, 500);
                     }
                 }, 500);
             }
@@ -514,7 +512,7 @@ public class ExtraService extends Service implements View.OnClickListener {
             alpha_idx = 1;
 
         for (View v : f_array) {
-            v.animate().setDuration(500).alpha(alpha_idx).start();
+            v.animate().setDuration(300).alpha(alpha_idx).start();
         }
 
         float x[] = new float[size];
@@ -534,12 +532,12 @@ public class ExtraService extends Service implements View.OnClickListener {
         }
 
         for (int i = 0; i < size - 1; i++) {
-            f_array[i].animate().setDuration(500).translationX(x[i]).start();
-            f_array[i].animate().setDuration(500).translationY(y[i]).start();
+            f_array[i].animate().setDuration(300).translationX(x[i]).start();
+            f_array[i].animate().setDuration(300).translationY(y[i]).start();
         }
 
-        f_array[size - 1].animate().setDuration(500).translationX(x[size - 1]).start();
-        f_array[size - 1].animate().setDuration(500).translationY(y[size - 1]).setListener(new Animator.AnimatorListener() {
+        f_array[size - 1].animate().setDuration(300).translationX(x[size - 1]).start();
+        f_array[size - 1].animate().setDuration(300).translationY(y[size - 1]).setListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
 
