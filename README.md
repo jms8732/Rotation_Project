@@ -9,7 +9,7 @@
 * Memory : 4096MB
 * Language : Java
 * IDE : Android Studio
-* Android os : Oreo, 
+* Android os : Oreo, Nougat
 
 ## Result
 ![0_30](https://user-images.githubusercontent.com/26684848/97865851-35ab3780-1d4e-11eb-9e51-c2bfcf830e9f.gif)
